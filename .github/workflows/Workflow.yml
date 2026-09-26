@@ -1,4 +1,4 @@
-name: workflow
+name: Print Two Messages
 
 on:
   push:
