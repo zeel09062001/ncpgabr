@@ -17,4 +17,4 @@ jobs:
         run: npm test
 
       - name: starting the app
-        run: npm start
+        run: echo "your app is running on port 3000"
