@@ -3,8 +3,12 @@ const server = require('./server');
 
 describe('GET / - HTTP Server Test Suite', () => {
   afterAll((done) => {
-    // Gracefully close the HTTP server instance after tests finish
-    server.close(done);
+    // Only attempt to close if the server is actively listening
+    if (server.listening) {
+      server.close(done);
+    } else {
+      done();
+    }
   });
 
   test('Should return status 200 OK', async () => {
