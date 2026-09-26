@@ -1,4 +1,4 @@
-name: Print Two Messages
+name: Workflow
 
 on:
   push:
@@ -6,11 +6,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  print-job:
+  print-messages:
     runs-on: ubuntu-latest
     steps:
       - name: Print First Message
-        run: echo "Message 1: GitHub Actions workflow has started!"
+        run: echo "Message 1: Hello from GitHub Actions!"
 
       - name: Print Second Message
-        run: echo "Message 2: Workflow step executed successfully!"
+        run: echo "Message 2: Workflow executed successfully!"
