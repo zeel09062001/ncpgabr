@@ -1,0 +1,16 @@
+name: workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  print-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print First Message
+        run: echo "Message 1: GitHub Actions workflow has started!"
+
+      - name: Print Second Message
+        run: echo "Message 2: Workflow step executed successfully!"
