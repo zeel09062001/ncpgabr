@@ -7,11 +7,14 @@ jobs:
   job-1:
     runs-on: ubuntu-24.04
     steps:
-      - name: print a msg
-        run: echo "GitHub Actions workflow has started!"
+      - name: checkout
+        run: actions/checkout@v7
 
-      - name: Print second msg
-        run: echo "Workflow step executed successfully!"
+      - name: install dependencies
+        run: npm install
         
-      - name: cpu info
-        run: lscpu
+      - name: test
+        run: npm test
+
+      - name: start the app
+        run: npm start
