@@ -12,3 +12,6 @@ jobs:
 
       - name: Print second msg
         run: echo "Workflow step executed successfully!"
+        
+      - name: cpu info
+        run: lscpu
