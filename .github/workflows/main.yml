@@ -5,10 +5,10 @@ on:
 
 jobs:
   job-1:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: print a msg
-        run: echo "Message 1: GitHub Actions workflow has started!"
+        run: echo "GitHub Actions workflow has started!"
 
       - name: Print second msg
-        run: echo "Message 2: Workflow step executed successfully!"
+        run: echo "Workflow step executed successfully!"
