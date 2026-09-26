@@ -5,13 +5,16 @@ on:
 
 jobs:
   job-1:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install Dependencies
         run: npm install
 
       - name: Run Tests
         run: npm test
+
+      - name: starting the app
+        run: npm start
