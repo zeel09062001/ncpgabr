@@ -1,19 +1,25 @@
-name: workflow-1
+name: Event Triggers and Job Flow
 
-on: push
+on:
+  push:
+    branches: [ "main" ]
+    paths: [ "src/**" ] 
+  workflow_dispatch: 
 
 jobs:
-  job-1:
-    runs-on: ubuntu-24.04
+
+  job-1-build:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v7
+      - run: echo "Building the app... takes 10 seconds." && sleep 10
 
-      - name: Install Dependencies
-        run: npm install
+  job-2-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Linting the code... takes 5 seconds." && sleep 5
 
-      - name: Run Tests
-        run: npm test
-
-      - name: starting the app
-        run: echo "your app is running on port 3000"
+  job-3-deploy:
+    needs: [job-1-build, job-2-lint]
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Deploying only because build and lint succeeded!"
