@@ -1,32 +1,30 @@
-name: Build and Push Docker Image
+name: Build and Push to Docker Hub
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-      packages: write
-
     steps:
+      # 1. Pull your code into the runner
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Log in to Docker Hub (requires setting up Secrets in GitHub)
+      # 2. Log in to Docker Hub using your repository secrets
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Build and push the image using official Docker actions
+      # 3. Build and push the image to your Docker Hub account
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}
+          # Note: This automatically uses your username and names the image 'my-homework-app'
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/my-homework-app:latest
