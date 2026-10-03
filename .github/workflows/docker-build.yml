@@ -1,4 +1,4 @@
-name: CI/CD Pipeline with Cache and Artifacts
+name: Docker Build and Push
 
 on:
   push:
@@ -8,86 +8,28 @@ on:
   workflow_dispatch:
 
 jobs:
-  # ==========================================
-  # JOB 1: BUILD & PACKAGE
-  # ==========================================
-  build:
-    name: Build Application
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v4[cite: 1]
+        uses: actions/checkout@v4
 
-      # 1. DEPENDENCY CACHING: Reuses installed npm modules across runs
-      - name: Set up Node.js with NPM Cache
-        uses: actions/setup-node@v4[cite: 1]
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
         with:
-          node-version: '18'[cite: 1]
-          cache: 'npm' # Automatically caches ~/.npm directory
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Build Application
-        run: |
-          mkdir -p dist
-          echo "console.log('Production Application Bundle');" > dist/app.js
-          echo "Build completed successfully!"
-
-      # 2. UPLOAD ARTIFACT: Saves the compiled output to GitHub storage
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4[cite: 1]
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
         with:
-          name: production-build
-          path: dist/[cite: 1]
-          retention-days: 7
-
-  # ==========================================
-  # JOB 2: TEST STAGE
-  # ==========================================
-  test:
-    name: Run Automated Tests
-    runs-on: ubuntu-latest
-    needs: build[cite: 1]
-
-    steps:
-      - name: Checkout Source Code
-        uses: actions/checkout@v4[cite: 1]
-
-      # Uses dependency caching in the test job to speed up package installation
-      - name: Set up Node.js with NPM Cache
-        uses: actions/setup-node@v4[cite: 1]
-        with:
-          node-version: '18'[cite: 1]
-          cache: 'npm'[cite: 1]
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Run Unit Tests
-        run: |
-          echo "Running unit tests..."
-          # npm test
-
-  # ==========================================
-  # JOB 3: DEPLOYMENT STAGE
-  # ==========================================
-  deploy:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [build, test][cite: 1]
-
-    steps:
-      # 3. DOWNLOAD ARTIFACT: Fetches the compiled dist/ files built in Job 1
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v4[cite: 1]
-        with:
-          name: production-build
-          path: dist/[cite: 1]
-
-      - name: Deploy Application
-        run: |
-          echo "Deploying application artifacts to server..."
-          ls -la dist/
-          echo "Deployment complete!"
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/my-app:${{ github.sha }}
