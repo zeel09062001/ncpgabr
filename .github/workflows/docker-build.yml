@@ -25,6 +25,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # 1. DOCKER LAYER CACHING ENABLED HERE
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
@@ -33,3 +34,13 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/my-app:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # 2. PIPELINE ARTIFACT UPLOAD (e.g., saving build/deployment manifests)
+      - name: Upload Deployment Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-deployment-spec
+          path: Dockerfile
+          retention-days: 7
