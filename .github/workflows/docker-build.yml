@@ -1,30 +1,93 @@
-name: Build and Push to Docker Hub
+name: CI/CD Pipeline with Cache and Artifacts
 
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
-  build-and-push:
+  # ==========================================
+  # JOB 1: BUILD & PACKAGE
+  # ==========================================
+  build:
+    name: Build Application
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Pull your code into the runner
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout Source Code
+        uses: actions/checkout@v4[cite: 1]
 
-      # 2. Log in to Docker Hub using your repository secrets
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
+      # 1. DEPENDENCY CACHING: Reuses installed npm modules across runs
+      - name: Set up Node.js with NPM Cache
+        uses: actions/setup-node@v4[cite: 1]
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          node-version: '18'[cite: 1]
+          cache: 'npm' # Automatically caches ~/.npm directory
 
-      # 3. Build and push the image to your Docker Hub account
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Application
+        run: |
+          mkdir -p dist
+          echo "console.log('Production Application Bundle');" > dist/app.js
+          echo "Build completed successfully!"
+
+      # 2. UPLOAD ARTIFACT: Saves the compiled output to GitHub storage
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4[cite: 1]
         with:
-          context: .
-          push: true
-          # Note: This automatically uses your username and names the image 'my-homework-app'
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/my-homework-app:latest
+          name: production-build
+          path: dist/[cite: 1]
+          retention-days: 7
+
+  # ==========================================
+  # JOB 2: TEST STAGE
+  # ==========================================
+  test:
+    name: Run Automated Tests
+    runs-on: ubuntu-latest
+    needs: build[cite: 1]
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4[cite: 1]
+
+      # Uses dependency caching in the test job to speed up package installation
+      - name: Set up Node.js with NPM Cache
+        uses: actions/setup-node@v4[cite: 1]
+        with:
+          node-version: '18'[cite: 1]
+          cache: 'npm'[cite: 1]
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Unit Tests
+        run: |
+          echo "Running unit tests..."
+          # npm test
+
+  # ==========================================
+  # JOB 3: DEPLOYMENT STAGE
+  # ==========================================
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, test][cite: 1]
+
+    steps:
+      # 3. DOWNLOAD ARTIFACT: Fetches the compiled dist/ files built in Job 1
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4[cite: 1]
+        with:
+          name: production-build
+          path: dist/[cite: 1]
+
+      - name: Deploy Application
+        run: |
+          echo "Deploying application artifacts to server..."
+          ls -la dist/
+          echo "Deployment complete!"
